@@ -3,13 +3,16 @@ import './App.css';
 
 function App() {
   const [role, setRole] = useState(null); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
   const [question, setQuestion] = useState("");
-  const [chat, setChat] = useState({ answer: "Hello! Upload a document to begin.", sources: [] });
+  const [chat, setChat] = useState({ answer: "", sources: [] }); 
   const [displayedText, setDisplayedText] = useState(""); 
   const [loading, setLoading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const chatEndRef = useRef(null);
 
-  // Auto-scroll logic
+  const welcomeMessage = "Hello! Upload a document to begin.";
+
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -18,44 +21,63 @@ function App() {
     scrollToBottom();
   }, [displayedText, loading]);
 
-  // Typewriter Effect Logic
   useEffect(() => {
+    if (role === 'admin') {
+      fetchUploadedFiles();
+    }
+  }, [role]);
+
+  const fetchUploadedFiles = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/files");
+      const data = await res.json();
+      setUploadedFiles(data.files || []);
+    } catch (err) {
+      console.error("Failed to fetch file history");
+    }
+  };
+
+  // Typewriter Effect
+  useEffect(() => {
+    if (!chat.answer) {
+      setDisplayedText("");
+      return;
+    }
+
     let index = 0;
     const fullText = chat.answer;
-    setDisplayedText("");
-
-    if (fullText.startsWith("Hello!") || fullText === "Thinking...") {
+    
+    if (fullText.startsWith("✅") || fullText.startsWith("❌") || fullText === "Thinking...") {
       setDisplayedText(fullText);
       return;
     }
 
+    setDisplayedText("");
     const interval = setInterval(() => {
       setDisplayedText((prev) => fullText.slice(0, index + 1));
       index++;
       if (index >= fullText.length) {
         clearInterval(interval);
       }
-    }, 15);
+    }, 10);
 
     return () => clearInterval(interval);
   }, [chat.answer]);
 
   const handleLogout = () => {
     setRole(null);
-    setChat({ answer: "Hello! Upload a document to begin.", sources: [] });
+    setChat({ answer: "", sources: [] });
     setQuestion("");
     setDisplayedText("");
+    setUploadedFiles([]);
   };
 
-  // Robust Formatter for **Bold** and ### Headers
   const formatResponse = (text) => {
     if (!text) return "";
-    
-    // Convert Markdown Bold (**text**) to HTML <strong>
     let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    
-    // Convert Markdown Headers (### text) to Bold <strong>
     formatted = formatted.replace(/^### (.*$)/gim, '<strong>$1</strong>');
+    formatted = formatted.replace(/^\* (.*$)/gim, '• $1');
+
 
     return formatted.split('\n').map((line, index) => (
       <span 
@@ -77,18 +99,19 @@ function App() {
       const res = await fetch("http://127.0.0.1:8000/upload", { method: "POST", body: formData });
       const data = await res.json();
       setChat({ answer: `✅ ${data.message}. You can now ask questions.`, sources: [] });
+      fetchUploadedFiles();
     } catch (err) {
-      setChat({ answer: "❌ Upload failed. Check if FastAPI is running.", sources: [] });
+      setChat({ answer: "❌ Upload failed.", sources: [] });
     }
     setLoading(false);
   };
 
   const askQuestion = async () => {
-    if (!question.trim()) return;
+    if (!question.trim() || loading) return;
     setLoading(true);
     const currentQuestion = question;
-    setQuestion(""); // Clear input immediately for better UX
-    setChat({ ...chat, answer: "Thinking..." });
+    setQuestion(""); 
+    setChat({ answer: "Thinking...", sources: [] });
 
     try {
       const res = await fetch(`http://127.0.0.1:8000/query?q=${encodeURIComponent(currentQuestion)}`, { method: "POST" });
@@ -105,7 +128,8 @@ function App() {
     setLoading(true);
     try {
       await fetch("http://127.0.0.1:8000/clear", { method: "POST" });
-      setChat({ answer: "System cleared. Ready for new uploads.", sources: [] });
+      setChat({ answer: "", sources: [] });
+      setUploadedFiles([]);
     } catch (err) { alert("❌ Failed to clear database."); }
     setLoading(false);
   };
@@ -129,32 +153,61 @@ function App() {
   }
 
   return (
-    <div className="app-container">
+    /* ✅ Dynamic class handles input bar shift and chat stability */
+    <div className={`app-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <header className="app-header">
-        <div className="header-content">
+        <div className="header-left">
+          {role === 'admin' && (
+            <button className="menu-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+              {isSidebarOpen ? "✕" : "☰"}
+            </button>
+          )}
           <h2 className="app-title">Document Intelligence</h2>
           <span className={`status-badge ${role}`}>{role} Mode</span>
         </div>
         <button className="logout-btn-top" onClick={handleLogout}>Logout</button>
       </header>
 
-      <div className="chat-window">
-        <div className="message-container">
-          <div className={`answer-text ${loading ? 'pulse' : ''}`}>
-            {formatResponse(displayedText)}
-          </div>
-          
-          {chat.sources.length > 0 && !loading && (
-            <div className="sources-section">
-              <div className="source-label">Sources Used:</div>
-              <div className="source-chips">
-                {[...new Set(chat.sources)].map((s, i) => (
-                  <span key={i} className="chip">📄 {s}</span>
-                ))}
-              </div>
+      <div className="main-layout">
+        {role === 'admin' && (
+          <aside className={`admin-sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
+            <div className="sidebar-header">Shared Knowledge</div>
+            <div className="file-list">
+              {uploadedFiles.length > 0 ? (
+                uploadedFiles.map((file, i) => (
+                  <div key={i} className="file-item" title={file}>📄 {file}</div>
+                ))
+              ) : (
+                <div className="empty-msg">No files uploaded yet.</div>
+              )}
             </div>
-          )}
-          <div ref={chatEndRef} />
+          </aside>
+        )}
+
+        <div className="chat-window">
+          <div className="message-container">
+            {!displayedText && !loading ? (
+              <div className="welcome-area">
+                <div className="welcome-text">{welcomeMessage}</div>
+              </div>
+            ) : (
+              <div className={`answer-text ${loading && displayedText === "Thinking..." ? 'pulse' : ''}`}>
+                {formatResponse(displayedText)}
+              </div>
+            )}
+            
+            {chat.sources.length > 0 && !loading && (
+              <div className="sources-section">
+                <div className="source-label">Sources Used:</div>
+                <div className="source-chips">
+                  {[...new Set(chat.sources)].map((s, i) => (
+                    <span key={i} className="chip">📄 {s}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
         </div>
       </div>
 
