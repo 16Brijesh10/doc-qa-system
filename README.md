@@ -14,25 +14,25 @@ This project focuses on a modular architecture that separates data ingestion fro
 
 **LLM**: Google Gemini Pro (Used for its 1M+ token context window and reasoning capabilities).
 
-Vector Database: ChromaDB (Handles high-dimensional similarity searches).
+**Vector Database:** ChromaDB (Handles high-dimensional similarity searches).
 
-Authentication: Firebase Auth (Provides secure Role-Based Access Control).
+**Authentication:** Firebase Auth (Provides secure Role-Based Access Control).
 
 ## 🔐 Key Features & Design Decisions
 
 ### 1. Verifiable Source Citations
 
-The Problem: LLMs can "hallucinate" information that isn't in the documents.
+**The Problem:** LLMs can "hallucinate" information that isn't in the documents.
 
-Our Solution: When documents are embedded into ChromaDB, we attach metadata (filename and page number) to every text chunk.
+**Our Solution:** When documents are embedded into ChromaDB, we attach metadata to every text chunk.
 
-Execution: During retrieval, the top-k most relevant chunks are sent to the LLM. We then extract the source names from the metadata and display them as "Source Chips" in the UI. This allows the user to click and verify exactly which file provided the answer.
+**Execution:** During retrieval, the most relevant chunks are sent to the LLM. We then extract the source names from the metadata and display them as "Source Chips" in the UI. This allows the user to click and verify exactly which file provided the answer.
 
 ### 2. Role-Based Access Control (RBAC)
 
-Admin Mode: Full access to the "Knowledge Base." Admins can upload new documents, view the file inventory, and clear the database.
+**Admin Mode:** Full access to the "Knowledge Base." Admins can upload new documents, view the file inventory, and clear the database.
 
-User Mode: Restricted to "Query Only." Users can ask questions but cannot modify the underlying data, ensuring system integrity.
+**User Mode:** Restricted to "Query Only." Users can ask questions but cannot modify the underlying data, ensuring system integrity.
 
 ### 3. Asynchronous Ingestion Pipeline
 
@@ -58,3 +58,4 @@ Run:
 
 ```bash
 docker-compose up --build
+
