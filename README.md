@@ -76,3 +76,11 @@ API Documentation: http://localhost:8000/docs
 **Future - Hybrid Search:** Implementation of BM25 Keyword Search alongside Vector Search to improve accuracy for specific technical terms or unique IDs that semantic search sometimes misses.
 
 **Future - Persistence:** Currently, the vector store persists to a Docker volume. Moving to a dedicated managed database would improve disaster recovery for enterprise-scale deployments.
+
+# How to Run
+
+1. **Clone the repo:** `git clone <your-url>`
+2. **Configure:** Open `docker-compose.yml` and add your `GOOGLE_API_KEY`.
+3. **Launch:** Run `docker-compose up --build`.
+4. **Access:** - Frontend: `http://localhost:3000`
+   - API Docs: `http://localhost:8000/docs`
