@@ -3,13 +3,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth"; // ✅ Added Google
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAFYtuG0Qjy08F8WcvU_HyEyt_eGNU8Mlg",
-    authDomain: "docintel-de06c.firebaseapp.com",
-    projectId: "docintel-de06c",
-    storageBucket: "docintel-de06c.firebasestorage.app",
-    messagingSenderId: "989972545129",
-    appId: "1:989972545129:web:e5f8e4213cdd44c78e6cf8",
-    measurementId: "G-23XZE4KWC3"
+    apiKey: "enter your key",
+    authDomain: "enter your key",
+    projectId: "enter your key",
+    storageBucket: "enter your key"
+    messagingSenderId: "enter your key",
+    appId:"enter your key",
+    measurementId: "enter your key"
 };
 
 const app = initializeApp(firebaseConfig);
