@@ -1,3 +1,4 @@
+/*app.css*/
 :root {
   --primary: #0080ff;
   --bg: #ffffff;
@@ -27,15 +28,24 @@ body {
   align-items: center; 
   background: #ffffff;
 }
+.login-title { text-align: center; 
+  font-size: 100px; 
+  font-weight: 700; 
+  margin: 0; 
+  border-radius: 16px; 
+  background: rgba(228, 233, 234, 0.95);
+  box-shadow: 0 4px 12px rgba(11, 1, 1, 0.594); 
+  color: #152410;
+  letter-spacing: -0.5px;}
 
 .login-options { display: flex; gap: 20px; margin-top: 30px; }
 
 .login-card {
   background: rgb(175, 229, 240); 
   padding: 40px; 
-  border-radius: 16px; 
+  border-radius: 26px; 
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+  box-shadow: 0 4px 12px rgba(11, 1, 1, 0.594); 
   transition: 0.3s; 
   text-align: center;
   border: 1px solid #c8f4d5; 
@@ -253,3 +263,58 @@ body {
 
 .pulse { opacity: 0.6; animation: pulse-anim 1.5s infinite; }
 @keyframes pulse-anim { 0%, 100% { opacity: 0.6; } 50% { opacity: 0.3; } }
+
+/* --- Auth Screen Styles --- */
+.auth-card {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  width: 350px;
+  text-align: center;
+}
+
+.login-input {
+  width: 100%;
+  padding: 11px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.auth-btn, .google-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.google-btn { background: #4285f4; }
+.back-link { border: none;
+   background: none; 
+   border-radius: 8px;
+   box-shadow: 0 4px 12px rgba(152, 140, 140, 0.594); 
+   color: var(--primary); 
+   cursor: pointer; 
+   margin-top: 20px;
+   margin-bottom: 10px; }
+
+/* --- Layout Shift Logic --- */
+.admin-view.sidebar-open .input-wrapper {
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+}
+
+.user-view .admin-sidebar {
+  display: none;
+}
+
+.user-view .input-wrapper {
+  margin-left: 0;
+  width: 100%;
+}
