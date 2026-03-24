@@ -3,15 +3,19 @@
   --bg: #ffffff;
   --text-main: #202124;
   --text-sub: #5f6368;
-  --header-bg: rgba(237, 249, 240, 0.9);
+  --admin-accent: #e8f0fe;
+  --user-accent: #f1f3f4;
+  --danger: #fa0000;
+  --header-height: 60px;
+  --sidebar-width: 280px; /* ✅ Added variable for the shift */
 }
 
 body { 
   margin: 0; 
-  font-family: 'Inter', sans-serif; 
+  font-family: 'Inter', -apple-system, sans-serif; 
   background: var(--bg); 
   color: var(--text-main); 
-  overflow-x: hidden;
+  overflow: hidden; 
 }
 
 /* --- Login Screen --- */
@@ -38,154 +42,214 @@ body {
   width: 180px;
 }
 
-.login-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+.login-card:hover { transform: translateY(-5px); border-color: var(--primary); background: #bde9f2; }
 
 /* --- App Header --- */
 .app-header {
   position: fixed;
   top: 0; left: 0; right: 0;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.9);
+  height: var(--header-height);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Space between logo and logout */
-  padding: 0 30px;
-  z-index: 1000;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 1100;
 }
 
-.header-content {
+.header-left { display: flex; align-items: center; gap: 10px; }
+.app-title { font-size: 18px; font-weight: 700; margin: 0; color: var(--text-main); letter-spacing: -0.5px; }
+
+.status-badge { font-size: 10px; text-transform: uppercase; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+.status-badge.admin { background: var(--admin-accent); color: #dc5757; }
+.status-badge.user { background: var(--user-accent); color: #287ade; }
+
+.logout-btn-top {
+  background: var(--danger);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.logout-btn-top:hover { background: #430202; }
+
+.menu-btn {
+  background: none; border: none; font-size: 20px; cursor: pointer;
+  padding: 8px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; transition: 0.2s;
+}
+
+.menu-btn:hover { background: #f1f3f4; }
+
+/* --- Main Layout --- */
+.main-layout {
   display: flex;
-  align-items: center;
+  margin-top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+}
+
+/* --- Sidebar Section --- */
+.admin-sidebar {
+  width: var(--sidebar-width);
+  background: #f8f9fadb;
+  border-right: 1px solid #eee;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
   gap: 15px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
-.app-title {
-  font-size: 18px;
-  font-weight: 700;
+/* Logic for sidebar closing */
+.sidebar-closed .admin-sidebar {
+  width: 0;
+  padding: 24px 0;
   margin: 0;
-  color: var(--text-main);
-  letter-spacing: -0.5px;
+  opacity: 0;
+  pointer-events: none;
+  border: none;
+  transform: translateX(-20px);
 }
 
-.status-badge {
-  font-size: 10px;
-  text-transform: uppercase;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 20px;
-  letter-spacing: 0.8px;
+.sidebar-header {
+  font-size: 11px; font-weight: 800; color: var(--text-sub);
+  text-transform: uppercase; letter-spacing: 1px;
 }
 
-.status-badge.admin { background: #e8f0fe; color: #dc5757; }
-.status-badge.user { background: #f1f3f4; color: #287ade; }
+.file-item {
+  background: white; padding: 10px 14px; border-radius: 10px; font-size: 13px;
+  border: 1px solid #eef0f2; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
 
-/* --- Chat Area --- */
-.app-container { height: 100vh; display: flex; flex-direction: column; }
-
+/* --- Chat Window --- */
 .chat-window { 
   flex: 1; 
+  min-width: 0;
   overflow-y: auto; 
-  padding: 100px 20px 200px 20px; 
+  padding: 20px 20px 200px 20px; 
   display: flex; 
   flex-direction: column;
-  align-items: center; 
+  align-items: center;
+  background: #fff;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth movement */
 }
 
 .message-container { width: 100%; max-width: 800px; }
 
-/* --- Typewriter & Blinking Cursor --- */
-.answer-text { line-height: 1.7; font-size: 15px; color: #333; }
-.answer-text strong { display: inline-block; margin-top: 8px; color: #000; }
-
-
-
-
-/* --- Sources --- */
-.sources-section { margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
-.source-label { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin-bottom: 12px; }
-.source-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { background: #f1f3f4; padding: 6px 14px; border-radius: 20px; font-size: 13px; border: 1px solid #dadce0; }
-
-/* --- Unified Input Bar --- */
-.input-wrapper {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  padding: 30px 0 40px 0;
-  background: linear-gradient(to top, #ffffff 70%, transparent);
+.welcome-area {
   display: flex; flex-direction: column; align-items: center;
-  z-index: 900;
+  justify-content: center; height: 60vh; text-align: center;
+}
+
+/* --- Input Bar Area (SHIFTS HERE) --- */
+.input-wrapper {
+  position: fixed; 
+  bottom: 0; left: 0; right: 0;
+  padding: 20px 0 30px 0;
+  background: linear-gradient(to top, #ffffff 85%, transparent);
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+  z-index: 1000;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); /* ✅ Essential for movement */
+}
+
+/* ✅ This makes the input bar move when sidebar opens */
+.sidebar-open .input-wrapper {
+  margin-left: var(--sidebar-width);
 }
 
 .floating-input-bar {
   width: 90%; max-width: 750px; background: #fff; border-radius: 32px; 
   display: flex; align-items: center; padding: 6px 12px; 
-  box-shadow: 0 10px 40px rgba(0,0,0,0.08); border: 1px solid #d1d2d4; gap: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid #d1d2d4; gap: 12px;
 }
 
-/* --- Round Plus Button --- */
+.floating-input-bar input { flex: 1; border: none; outline: none; font-size: 16px; padding: 10px 0; }
+
 .round-plus-btn {
   width: 36px; height: 36px; background: #f1f3f4; color: #5f6368;
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
   font-size: 24px; cursor: pointer; transition: 0.2s; border: 1px solid #dadce0;
-  line-height: 0; padding-bottom: 3px;
 }
 
-.round-plus-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
-
-.floating-input-bar input { flex: 1; border: none; outline: none; font-size: 16px; padding: 10px 0; }
-
-/* --- Send Button --- */
 .send-btn {
   background: var(--primary); color: white; border: none;
   width: 36px; height: 36px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; cursor: pointer; transition: 0.3s;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 
-.send-btn:hover { transform: scale(1.1); background: #0066cc; }
-.send-btn:disabled { background: #e0e0e0; cursor: not-allowed; }
-
-/* --- Footer Buttons --- */
-.footer-actions { display: flex; gap: 20px; margin-top: 15px; }
-.secondary-btn { background: none; border: none; color: var(--text-sub); font-size: 12px; cursor: pointer; font-weight: 500; }
-.secondary-btn:hover { color: var(--primary); text-decoration: underline; }
-.clear-btn:hover { color: #d93025 !important; }
-
-.pulse { opacity: 0.6; animation: pulse-anim 1.5s infinite; }
-@keyframes pulse-anim { 0% { opacity: 0.6; } 50% { opacity: 0.3; } 100% { opacity: 0.6; } }
-
-.response-line {
-  display: block;
-  margin-bottom: 8px;
+/* --- Sources Highlighting --- */
+.sources-section {
+  margin-top: 35px;
+  border-top: 1px solid #f1f3f4;
+  padding-top: 20px;
+  width: 100%;
 }
 
-.answer-text strong {
-  font-weight: 800 !important; /* Forces bold appearance */
-  color: #000;
-  display: inline-block;
-  margin-top: 4px;
+.source-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--primary); /* Blue highlight label */
+  text-transform: uppercase;
+  margin-bottom: 12px;
 }
 
-/* Optional: Make the text after headers look cleaner */
-.answer-text br {
-  margin-bottom: 10px;
-}
+.source-chips { display: flex; flex-wrap: wrap; gap: 10px; }
 
-/* --- Logout Button Style --- */
-.logout-btn-top {
-  background: #fa0000;
-  color: white;
-  border: none;
+.chip {
+  background: #e8f0fe; /* ✅ Light blue highlight */
+  color: #1967d2;      /* ✅ Deep blue text */
   padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 12px;
   font-size: 13px;
-  cursor: pointer;
+  font-weight: 600;
+  border: 1px solid #d2e3fc;
   transition: 0.2s;
 }
 
-.logout-btn-top:hover {
-  background: #430202;
-  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.2);
+.chip:hover {
+  background: #d2e3fc;
+  transform: translateY(-2px);
 }
+
+/* --- Clear History Actions --- */
+.footer-actions { display: flex; gap: 20px; margin-top: 25px; }
+
+.secondary-btn { 
+  background: #f1f3f4; 
+  border: 1px solid #dadce0; 
+  color: var(--text-sub); 
+  font-size: 13px; 
+  cursor: pointer; 
+  font-weight: 600; 
+  padding: 8px 16px; 
+  border-radius: 8px; 
+  transition: all 0.2s ease;
+}
+
+.clear-btn:hover { 
+  background: #fce8e6 !important; 
+  color: var(--danger) !important; 
+  border-color: #f28b82 !important;
+}
+
+/* --- Formatter Fixes --- */
+.answer-text { line-height: 1.7; font-size: 15px; color: #333; }
+.response-line { display: block; margin-bottom: 10px; }
+.answer-text strong { font-weight: 800; color: #000; display: inline-block; margin-top: 8px; }
+
+.pulse { opacity: 0.6; animation: pulse-anim 1.5s infinite; }
+@keyframes pulse-anim { 0%, 100% { opacity: 0.6; } 50% { opacity: 0.3; } }
