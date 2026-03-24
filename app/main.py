@@ -8,38 +8,39 @@ from typing import List
 from io import BytesIO
 from google.genai import Client
 
-clients = Client(api_key="AIzaSyDGi-oM1FcYhiGu0aoA0Q23i86ArgK2u28")
-model_name = "models/gemini-flash-latest"  # choose one of your available models
+# Initialize Gemini Client
+clients = Client(api_key="please enter key") 
+model_name = "models/gemini-flash-latest"
 
 app = FastAPI()
 
-# Allow frontend
 app.add_middleware(
     CORSMiddleware,
-    #allow_origins=["*"],
     allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Vector DB
-client = chromadb.Client()
-collection = client.get_or_create_collection(name="docs")
+# Initialize ChromaDB Client
+db_client = chromadb.Client()
+# We don't define 'collection' globally here to avoid stale references
 
 # Embedding model
-model = SentenceTransformer("all-MiniLM-L6-v2")
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Store documents
 @app.post("/upload")
 async def upload(files: List[UploadFile] = File(...)):
-   
-   # Delete all previous documents before adding new ones
-    all_docs = collection.get()
-    all_ids = all_docs['ids']
-    if all_ids:
-        collection.delete(where={"id": {"$in": all_ids}})
-
+    # Always get or create the collection inside the route
+    collection = db_client.get_or_create_collection(name="docs")
+    
+    # 1. Safer way to clear previous documents
+    try:
+        all_docs = collection.get()
+        if all_docs['ids']:
+            collection.delete(ids=all_docs['ids'])
+    except:
+        pass # Collection might be empty or fresh
 
     all_chunks = []
     all_embeddings = []
@@ -47,38 +48,29 @@ async def upload(files: List[UploadFile] = File(...)):
     all_metadata = []
 
     for file in files:
-    
         content = await file.read()
-
         text = ""
 
-        # ✅ PDF
         if file.filename.endswith(".pdf"):
             reader = PdfReader(BytesIO(content))
             for page in reader.pages:
                 text += page.extract_text() or ""
-
-        # ✅ DOCX (WORD)
         elif file.filename.endswith(".docx"):
             doc = Document(BytesIO(content))
             for para in doc.paragraphs:
                 text += para.text + "\n"
-
-        # ✅ TXT
         else:
             try:
                 text = content.decode("utf-8")
             except:
                 text = ""
 
-        # Split
+        # Chunking
         chunks = [text[i:i+500] for i in range(0, len(text), 500)]
-
         if not chunks:
-            print(f"Skipping {file.filename} (no text found)")
             continue
 
-        embeddings = model.encode(chunks).tolist()
+        embeddings = embedding_model.encode(chunks).tolist()
         ids = [f"{file.filename}_{i}" for i in range(len(chunks))]
 
         all_chunks.extend(chunks)
@@ -86,9 +78,8 @@ async def upload(files: List[UploadFile] = File(...)):
         all_ids.extend(ids)
         all_metadata.extend([{"source": file.filename}] * len(chunks))
 
-    # 🚨 final safety
     if not all_chunks:
-        return {"message": "No readable text found in uploaded files"}
+        return {"message": "No readable text found"}
 
     collection.add(
         documents=all_chunks,
@@ -101,40 +92,37 @@ async def upload(files: List[UploadFile] = File(...)):
 
 @app.post("/query")
 def query(q: str):
-    query_embedding = model.encode([q]).tolist()
+    # Get collection dynamically
+    collection = db_client.get_or_create_collection(name="docs")
+    
+    query_embedding = embedding_model.encode([q]).tolist()
     results = collection.query(query_embeddings=query_embedding, n_results=3)
 
-    # 1. Grab the actual data (Chroma returns lists of lists)
     all_chunks = results["documents"][0] if results["documents"] else []
     all_metadatas = results["metadatas"][0] if results["metadatas"] else []
 
     if not all_chunks:
         return {"answer": "No relevant info found in docs.", "sources": []}
 
-    #2. Combine all 5 chunks into ONE context
     context = "\n\n".join(all_chunks)
     
     prompt = f"""
-You are a strict filtering assistant. 
+    You are a strict filtering assistant. 
 The user is asking ONLY about: "{q}".
 RULES:
 Using ONLY the context below, provide a structured summary. 
 If context is about specific person limits within the person information,
-If the context contains information about different people or documents, 
-list them separately.
-
+If the context contains information about different people or documents list them separately,
+If the context does not contain the answer, or if the context is empty, respond ONLY with: "I'm sorry, I couldn't find any information regarding that in the uploaded documents."
+Do NOT mention "Based on the provided context" or "There is no information,
+Do NOT hallucinate or use outside knowledge
 Context:
 {context}
 
 Question: {q}
 """
     
-    response = clients.models.generate_content(
-        model=model_name,
-        contents=prompt
-    )
-
-    # 3. Extract unique filenames from the "source" key
+    response = clients.models.generate_content(model=model_name, contents=prompt)
     unique_sources = list({meta.get('source', 'Unknown') for meta in all_metadatas})
 
     return {
@@ -145,9 +133,11 @@ Question: {q}
 @app.post("/clear")
 async def clear_data():
     try:
-        # Replace 'docs' with whatever your collection name is
-        client.delete_collection(name="docs") 
-        client.get_or_create_collection(name="docs")
+        # Delete and recreate to wipe everything physically
+        db_client.delete_collection(name="docs") 
+        db_client.get_or_create_collection(name="docs")
         return {"message": "Database and chat history cleared successfully"}
     except Exception as e:
-        return {"error": str(e)}, 500
+        # If it fails (e.g. doesn't exist), just ensure it's created
+        db_client.get_or_create_collection(name="docs")
+        return {"message": "Database was already empty or has been reset"}
