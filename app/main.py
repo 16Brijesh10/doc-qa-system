@@ -9,7 +9,7 @@ from io import BytesIO
 from google.genai import Client
 
 # Initialize Gemini Client
-clients = Client(api_key="please enter key") 
+clients = Client(api_key="AIzaSyCEJWYMxrvvGIGqooQW_VjhXmjLVep4X6g") 
 model_name = "models/gemini-flash-latest"
 
 app = FastAPI()
@@ -106,29 +106,28 @@ def query(q: str):
 
     context = "\n\n".join(all_chunks)
     
-    prompt = f"""
+    prompt =f"""
     You are a strict filtering assistant. 
-The user is asking ONLY about: "{q}".
-RULES:
-Using ONLY the context below, provide a structured summary. 
-If context is about specific person limits within the person information,
-If the context contains information about different people or documents list them separately,
-If the context does not contain the answer, or if the context is empty, respond ONLY with: "I'm sorry, I couldn't find any information regarding that in the uploaded documents."
-Do NOT mention "Based on the provided context" or "There is no information,
-Do NOT hallucinate or use outside knowledge
-Context:
-{context}
-
-Question: {q}
-"""
+    The user is asking ONLY about: "{q}".
+    RULES:
+    Using ONLY the context below, provide a structured summary. 
+    If context is about specific person limits within the person information,
+    If the context contains information about different people or documents list them separately,
+    If the context does not contain the answer, or if the context is empty, respond ONLY with: "I'm sorry, I couldn't find any information regarding that in the uploaded documents."
+    Do NOT mention "Based on the provided context" or "There is no information,
+    Do NOT hallucinate or use outside knowledge
+    Context:
+    {context}
     
-    response = clients.models.generate_content(model=model_name, contents=prompt)
-    unique_sources = list({meta.get('source', 'Unknown') for meta in all_metadatas})
-
-    return {
-        "answer": response.text.strip() if response.text else "No answer found",
-        "sources": unique_sources
-    }
+    Question: {q}"""
+        
+        response = clients.models.generate_content(model=model_name, contents=prompt)
+        unique_sources = list({meta.get('source', 'Unknown') for meta in all_metadatas})
+    
+        return {
+            "answer": response.text.strip() if response.text else "No answer found",
+            "sources": unique_sources
+        }
     
 @app.post("/clear")
 async def clear_data():
@@ -141,3 +140,17 @@ async def clear_data():
         # If it fails (e.g. doesn't exist), just ensure it's created
         db_client.get_or_create_collection(name="docs")
         return {"message": "Database was already empty or has been reset"}
+    
+@app.get("/files")
+async def get_files():
+    """✅ NEW: Returns a unique list of uploaded filenames for the Admin Sidebar"""
+    try:
+        collection = db_client.get_or_create_collection(name="docs")
+        results = collection.get(include=['metadatas'])
+        metadatas = results.get('metadatas', [])
+        
+        # Extract unique filenames from 'source' key
+        unique_files = list(set([m.get('source') for m in metadatas if m.get('source')]))
+        return {"files": unique_files}
+    except Exception as e:
+        return {"files": [], "error": str(e)}
