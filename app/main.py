@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import chromadb
 from sentence_transformers import SentenceTransformer
+#from sentence_transformers import CrossEncoder 
 from pypdf import PdfReader
 from docx import Document
 from typing import List
@@ -28,6 +29,7 @@ db_client = chromadb.Client()
 
 # Embedding model
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+#embedding_model = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
 
 @app.post("/upload")
 async def upload(files: List[UploadFile] = File(...)):
