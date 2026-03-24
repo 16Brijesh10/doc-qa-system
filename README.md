@@ -77,7 +77,7 @@ API Documentation: http://localhost:8000/docs
 
 **Future - Persistence:** Currently, the vector store persists to a Docker volume. Moving to a dedicated managed database would improve disaster recovery for enterprise-scale deployments.
 
-# How to Run
+# How to Run on your system
 
 1. **Clone the repo:** `git clone <your-url>`
 2. **Configure:** Open `docker-compose.yml` and add your `GOOGLE_API_KEY`.
