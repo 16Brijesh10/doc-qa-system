@@ -59,3 +59,20 @@ Run:
 ```bash
 docker-compose up --build
 
+Frontend Access: http://localhost:3000
+
+API Documentation: http://localhost:8000/docs
+
+```
+
+## 💡 Trade-offs & Future Roadmap
+
+**The Challenge:** As the number of uploaded documents increases, the "Top-K" retrieval process can sometimes fetch irrelevant context from similar but unrelated files. This "noise" can lead to less precise answers from the LLM.
+
+**Trade-off:** To keep the system simple and fast for this assignment, we used a standard Vector-Only Retrieval.
+
+**Design Thinking:** In a production environment, we would mitigate this by implementing Reranking (using a Cross-Encoder to score the chunks before sending them to the LLM) or Metadata Filtering to narrow the search to specific document categories.
+
+**Future - Hybrid Search:** Implementation of BM25 Keyword Search alongside Vector Search to improve accuracy for specific technical terms or unique IDs that semantic search sometimes misses.
+
+**Future - Persistence:** Currently, the vector store persists to a Docker volume. Moving to a dedicated managed database would improve disaster recovery for enterprise-scale deployments.
