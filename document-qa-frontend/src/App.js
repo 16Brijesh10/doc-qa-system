@@ -5,23 +5,50 @@ function App() {
   const [role, setRole] = useState(null); 
   const [question, setQuestion] = useState("");
   const [chat, setChat] = useState({ answer: "Hello! Upload a document to begin.", sources: [] });
+  const [displayedText, setDisplayedText] = useState(""); // ✅ For Typewriter
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
 
-  // Helper to scroll to bottom when new messages arrive
+  // Scroll to bottom helper
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [chat]);
+  }, [displayedText]); // Scroll as text types out
+
+  // ✅ NEW: Typewriter Logic
+  useEffect(() => {
+    let index = 0;
+    const fullText = chat.answer;
+    
+    // Reset displayed text for new answers
+    setDisplayedText("");
+
+    // If it's the initial message or "Thinking...", show it immediately
+    if (fullText.startsWith("Hello!") || fullText === "Thinking...") {
+      setDisplayedText(fullText);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setDisplayedText((prev) => fullText.slice(0, index + 1));
+      index++;
+      if (index >= fullText.length) {
+        clearInterval(interval);
+      }
+    }, 15); // 15ms per character (adjust for speed)
+
+    return () => clearInterval(interval);
+  }, [chat.answer]);
 
   // ✅ HANDLER: Logout and Clear State
   const handleLogout = () => {
-    setRole(null); // Return to login screen
-    setChat({ answer: "Hello! Upload a document to begin.", sources: [] }); // Wipe chat
-    setQuestion(""); // Wipe input box
+    setRole(null);
+    setChat({ answer: "Hello! Upload a document to begin.", sources: [] });
+    setQuestion("");
+    setDisplayedText("");
   };
 
   // ✅ FORMATTER: Converts **bold** to <strong> and handles line breaks
@@ -76,7 +103,6 @@ function App() {
     setLoading(false);
   };
 
-  // --- LOGIN VIEW ---
   if (!role) {
     return (
       <div className="login-container">
@@ -95,17 +121,15 @@ function App() {
     );
   }
 
-  // --- MAIN INTERFACE ---
   return (
     <div className="app-container">
-      {/* ✅ NEW: Header with Name and Status */}
       <header className="app-header">
         <div className="header-content">
-          <span className="app-logo"></span>
           <h2 className="app-title">Document Intelligence</h2>
           <span className={`status-badge ${role}`}>{role} Mode</span>
         </div>
       </header>
+
       {role === 'admin' && (
         <div className="admin-action">
           <label htmlFor="file-input" className="floating-plus">+</label>
@@ -115,11 +139,12 @@ function App() {
 
       <div className="chat-window">
         <div className="message-container">
+          {/* ✅ Uses displayedText for the typewriter effect */}
           <div className={`answer-text ${loading ? 'pulse' : ''}`}>
-            {formatResponse(chat.answer)}
+            {formatResponse(displayedText)}
           </div>
           
-          {chat.sources.length > 0 && (
+          {chat.sources.length > 0 && !loading && (
             <div className="sources-section">
               <div className="source-label">Sources Used:</div>
               <div className="source-chips">
@@ -151,7 +176,6 @@ function App() {
               Clear History
             </button>
           )}
-          {/* ✅ Updated to call handleLogout */}
           <button className="secondary-btn" onClick={handleLogout}>
             Logout
           </button>
