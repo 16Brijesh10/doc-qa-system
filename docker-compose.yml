@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  backend:
+    build: ./app
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_API_KEY="enter your key"
+    stdin_open: true
+    tty: true
+  frontend:
+    build: ./document-qa-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
