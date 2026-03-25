@@ -48,6 +48,18 @@ Docker & Docker Compose installed.
 
 A Google Gemini API Key.
 
+### Required Libraries
+```
+fastapi
+uvicorn
+python-multipart
+pydantic
+chromadb
+sentence-transformers
+pypdf
+python-docx
+```
+
 ### Quick Start
 
 Clone this repository.
