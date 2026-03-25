@@ -9,7 +9,7 @@ from io import BytesIO
 from google.genai import Client
 
 # Initialize Gemini Client
-clients = Client(api_key="AIzaSyBvcTDRFPIpBxzpJLwnn1BY4k1xZVrm33U") 
+clients = Client(api_key="Enter your Api key") 
 model_name = "models/gemini-flash-latest"
 
 app = FastAPI()
