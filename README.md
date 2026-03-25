@@ -1,4 +1,4 @@
-# 📑 Intelligent Document Q&A System
+# 📑 Intelligent Document Q&A System (DocIntelL)
 
 A RAG (Retrieval-Augmented Generation) platform designed to ingest multiple document formats and provide natural language answers backed by verifiable source citations.
 
