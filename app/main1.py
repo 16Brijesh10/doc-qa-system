@@ -1,3 +1,4 @@
+#This code for multiple document retrieval ( cross encoder used)
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import chromadb
