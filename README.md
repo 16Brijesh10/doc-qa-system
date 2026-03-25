@@ -12,7 +12,7 @@ This project focuses on a modular architecture that separates data ingestion fro
 
 **Backend**: FastAPI (Async endpoints for high-concurrency document processing).
 
-**LLM**: Google Gemini Pro (Used for its 1M+ token context window and reasoning capabilities).
+**LLM**: Google Gemini (token context window and reasoning capabilities).
 
 **Vector Database:** ChromaDB (Handles high-dimensional similarity searches).
 
