@@ -69,11 +69,9 @@ firebase	 10.7.0
 ramer-motion	10.16.5
 ```
 
-### Quick Start
+### Quick Reminder
 
-Clone this repository.
-
-Open docker-compose.yml and paste your GOOGLE_API_KEY in the environment section.
+Open docker-compose.yml and paste your GOOGLE_API_KEY in the environment section 
 
 
 Run:
@@ -100,9 +98,17 @@ API Documentation: http://localhost:8000/docs
 **Future - Persistence:** Currently, the vector store persists to a Docker volume. Moving to a dedicated managed database would improve disaster recovery for enterprise-scale deployments.
 
 # How to Run on your system
-
+#### Create a virtual environment:
+```
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 1. **Clone the repo:** `git clone <your-url>`
-2. **Configure:** Open `docker-compose.yml` and add your `GOOGLE_API_KEY`.
-3. **Launch:** Run `docker-compose up --build`.
-4. **Access:** - Frontend: `http://localhost:3000`
+2. Install dependencies: pip install -r requirements.txt
+3. Replacer you Google Api key in backend
+4. uvicorn main:app --reload --port 8000 - to check backend
+5. npm strat - to check frontend
+6. **Configure:** Open `docker-compose.yml` and add your `GOOGLE_API_KEY`.
+7. **Launch:** Run `docker-compose up --build`.
+8. **Access:** - Frontend: `http://localhost:3000`
    - API Docs: `http://localhost:8000/docs`
