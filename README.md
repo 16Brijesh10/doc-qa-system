@@ -53,9 +53,9 @@ A Google Gemini API Key.
 ```
 fastapi  0.104.1
 uvicorn  0.24.0
-python-multipart
+python-multipart 0.0.6
 google-generativeai	0.3.1
-pydantic
+pydantic 2.5.2
 chromadb  0.4.18
 sentence-transformers 2.2.2
 pypdf 3.17.0+
@@ -74,6 +74,7 @@ ramer-motion	10.16.5
 Clone this repository.
 
 Open docker-compose.yml and paste your GOOGLE_API_KEY in the environment section.
+
 
 Run:
 
@@ -94,7 +95,7 @@ API Documentation: http://localhost:8000/docs
 
 **Design Thinking:** In a production environment, we would mitigate this by implementing Reranking (using a Cross-Encoder to score the chunks before sending them to the LLM) or Metadata Filtering to narrow the search to specific document categories.
 
-**Future - Hybrid Search:** Implementation of BM25 Keyword Search alongside Vector Search to improve accuracy for specific technical terms or unique IDs that semantic search sometimes misses.
+**Future - Hybrid Search:** Implementation of Keyword Search alongside Vector Search to improve accuracy for specific technical terms or unique IDs that semantic search sometimes misses.
 
 **Future - Persistence:** Currently, the vector store persists to a Docker volume. Moving to a dedicated managed database would improve disaster recovery for enterprise-scale deployments.
 
